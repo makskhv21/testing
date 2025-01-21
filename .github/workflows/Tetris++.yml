@@ -1,4 +1,4 @@
-name: Rust Tests
+name: CI tests for Tetris++
 
 on:
   push:
@@ -19,6 +19,12 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - run: cargo build --release
+      - name: Install dependencies and build in Tetris++
+        run: |
+          cd Tetris++
+          cargo build --release
 
-      - run: cargo test --verbose
+      - name: Run tests in Tetris++
+        run: |
+          cd Tetris++
+          cargo test --verbose
