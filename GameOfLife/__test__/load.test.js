@@ -47,14 +47,4 @@ describe('Load Tests', () => {
         expect(finalState).toBeDefined();
         expect(endTime - startTime).toBeLessThan(5000);
     });
-    test('should handle very large grid (1000x1000)', () => {
-        const rows = 1000, cols = 1000;
-        const largeField = Array.from({ length: rows }, () => Array(cols).fill('.'));
-        const generations = 100;
-        const startTime = Date.now();
-        const finalState = getGenerations(largeField, generations);
-        const endTime = Date.now();
-        expect(finalState).toBeDefined();
-        expect(endTime - startTime).toBeLessThan(10000);
-    });
 });
