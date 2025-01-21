@@ -2,7 +2,9 @@ const {
     createField,
     getNextCellStateWithToroidalBorders,
     getNextGeneration,
-    getGenerations
+    getGenerations,
+    countAliveCells,
+    analyzeGameDynamics,
 } = require('../gameLogic.js');
 
 describe('createField', () => {
@@ -10,10 +12,10 @@ describe('createField', () => {
         const rows = 5;
         const cols = 5;
         const field = createField(rows, cols);
-        
+
         expect(field.length).toBe(rows);
         expect(field[0].length).toBe(cols);
-        
+
         expect(field).toEqual([
             ['.', '.', '.', '.', '.'],
             ['.', '.', '.', '.', '.'],
@@ -124,7 +126,7 @@ describe('getNextCellStateWithToroidalBorders', () => {
             ['x', 'x', 'x', 'x', 'x']
         ];
         expect(getNextCellStateWithToroidalBorders(field, 4, 4)).toBe('x');
-    });
+    }); 
 });
 
 describe('getNextGeneration', () => {
@@ -158,7 +160,7 @@ describe('getNextGeneration', () => {
         ];
         expect(nextGen).toEqual(expectedNextGen);
     });
-    
+
 
     it('should return the same field when no cells are alive', () => {
         const field = [
@@ -216,7 +218,7 @@ describe('getNextGeneration', () => {
             ['.', '.', '.', '.', '.'],
             ['.', '.', '.', '.', '.']
         ];
-    
+
         expect(nextGen).toEqual(expectedNextGen);
     });
 
@@ -248,7 +250,7 @@ describe('getNextGeneration', () => {
             ['.', '.', '.', '.', '.'],
             ['.', '.', '.', '.', '.']
         ];
-    
+
         expect(nextGen).toEqual(expectedNextGen);
     });
 });
@@ -311,10 +313,10 @@ describe('getGenerations', () => {
             ['.', '.', '.', '.', '.'],
             ['.', '.', '.', '.', '.']
         ];
-    
+
         expect(finalState).toEqual(expectedFinalState);
     });
-    
+
 
     it('should return the same field after 0 generations', () => {
         const field = [
@@ -340,5 +342,118 @@ describe('getGenerations', () => {
         const generations = 50;
         const finalState = getGenerations(field, generations);
         expect(finalState).toBeDefined(); 
+    });
+});
+describe('countAliveCells', () => {
+    test('should return 0 for an empty field', () => {
+        const field = [
+            ['.', '.', '.'],
+            ['.', '.', '.'],
+            ['.', '.', '.']
+        ];
+        expect(countAliveCells(field)).toBe(0);
+    });
+    test('should count 1 alive cell in a 3x3 field with one alive cell', () => {
+        const field = [
+            ['.', '.', '.'],
+            ['.', 'x', '.'],
+            ['.', '.', '.']
+        ];
+        expect(countAliveCells(field)).toBe(1);
+    });    
+    test('should count 3 alive cells', () => {
+        const field = [
+            ['.', '.', 'x'],
+            ['x', '.', '.'],
+            ['.', 'x', '.']
+        ];
+        expect(countAliveCells(field)).toBe(3);
+    });
+    test('should count 7 alive cells', () => {
+        const field = [
+            ['x', '.', 'x'],
+            ['x', 'x', 'x'],
+            ['.', 'x', 'x']
+        ];
+        expect(countAliveCells(field)).toBe(7);
+    });
+    test('should count all cells as alive in a fully populated field', () => {
+        const field = [
+            ['x', 'x', 'x'],
+            ['x', 'x', 'x'],
+            ['x', 'x', 'x']
+        ];
+        expect(countAliveCells(field)).toBe(9);
+    });    
+    test('should return 0 for a fully dead field', () => {
+        const field = [
+            ['.', '.', '.'],
+            ['.', '.', '.'],
+            ['.', '.', '.']
+        ];
+        expect(countAliveCells(field)).toBe(0);
+    });
+});
+describe('analyzeGameDynamics', () => {
+    test('should return stable generation after 1 generation for still life', () => {
+        const initialField = [
+            ['x', 'x'],
+            ['x', 'x']
+        ];
+        const generations = 10;
+        expect(analyzeGameDynamics(initialField, generations)).toBe(2);
+    });
+    
+    test('should return stable generation after 2 generations for oscillator', () => {
+        const initialField = [
+            ['.', 'x', '.'],
+            ['.', 'x', '.'],
+            ['.', 'x', '.']
+        ];
+        const generations = 10;
+        expect(analyzeGameDynamics(initialField, generations)).toBe(3);
+    });
+    
+    test('should return total generations for a glider pattern', () => {
+        const initialField = [
+            ['.', '.', 'x', '.', '.'],
+            ['.', '.', '.', 'x', '.'],
+            ['x', 'x', 'x', '.', '.'],
+            ['.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.']
+        ];
+        const generations = 5;
+        expect(analyzeGameDynamics(initialField, generations)).toBe(generations);
+    });
+    
+    test('should return 1 generation for a single live cell', () => {
+        const initialField = [
+            ['.', '.', '.'],
+            ['.', 'x', '.'],
+            ['.', '.', '.']
+        ];
+        const generations = 10;
+        expect(analyzeGameDynamics(initialField, generations)).toBe(2);
+    });
+    
+    test('should return stable generation or total generations for a large random field', () => {
+        const initialField = [
+            ['x', '.', '.', '.', 'x', '.', '.', '.', 'x'],
+            ['.', '.', 'x', '.', '.', '.', 'x', '.', '.'],
+            ['x', '.', '.', 'x', '.', '.', 'x', 'x', '.'],
+            ['x', '.', 'x', 'x', 'x', '.', '.', '.', 'x'],
+        ];
+        const generations = 50;
+        expect(analyzeGameDynamics(initialField, generations)).toBeLessThanOrEqual(generations);
+    });
+    
+    test('should return stable generation for an empty field (all dead cells)', () => {
+        const initialField = [
+            ['.', '.', '.'],
+            ['.', '.', '.'],
+            ['.', '.', '.']
+        ];
+        const generations = 10;
+        expect(analyzeGameDynamics(initialField, generations)).toBe(1);
     });
 });
